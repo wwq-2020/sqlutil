@@ -82,7 +82,6 @@ func genStruct() {
 		}
 		curPkg = p.Name
 		var baseDir string
-		fmt.Println(dst == "", dst)
 		if dst == "" {
 			baseDir = filepath.Dir(curPath)
 		} else {
@@ -90,7 +89,6 @@ func genStruct() {
 			baseDir = dst
 		}
 		dst := filepath.Join(baseDir, strings.Replace(name, ".go", suffix, -1))
-		fmt.Println(baseDir, dst)
 
 		buf := bytes.NewBuffer(nil)
 
