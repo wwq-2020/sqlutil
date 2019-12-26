@@ -26,8 +26,10 @@ const (
 var (
 	src          string
 	dst          string
+	mod          string
 	curStruct    string
 	curPkg       string
+	srcPkg       string
 	curColumns   []string
 	curValues    []string
 	curFields    []string
@@ -56,12 +58,13 @@ type tpl struct {
 
 func init() {
 	flag.StringVar(&src, "src", ".", "-src=.")
+	flag.StringVar(&mod, "mod", "", "-mod=.")
 	flag.StringVar(&dst, "dst", "", "-dst=.")
 	flag.Parse()
 }
 
 func main() {
-	if src == "" {
+	if src == "" || mod == "" {
 		flag.PrintDefaults()
 		return
 	}
@@ -85,6 +88,7 @@ func genStruct() {
 			return err
 		}
 		curPkg = p.Name
+		srcPkg = p.Name
 		var baseDir string
 		if dst == "" {
 			baseDir = filepath.Dir(curPath)
@@ -154,11 +158,25 @@ func getTableName(comment string) string {
 func gen(specs []ast.Spec, buf io.Writer) error {
 	if !curImported {
 		curImported = true
-		io.WriteString(buf, fmt.Sprintf(`package %s
+		if dst != "" {
+			io.WriteString(buf, fmt.Sprintf(`package %s
 			import(
 				"database/sql"
 				"context"
+				"fmt"
+				"strings"
+				"%s"
+			)`, curPkg, path.Join(mod, src)))
+		} else {
+			io.WriteString(buf, fmt.Sprintf(`package %s
+			import(
+				"database/sql"
+				"context"
+				"fmt"
+				"strings"
 			)`, curPkg))
+		}
+
 	}
 	for _, spec := range specs {
 		ts, ok := spec.(*ast.TypeSpec)
@@ -203,7 +221,11 @@ func gen(specs []ast.Spec, buf io.Writer) error {
 }
 
 func execTpl(buf io.Writer) error {
-	tpl := tpl{Name: curStruct, Pkg: curPkg, Column: strings.Join(curColumns, ", "), Bys: curBys, Scan: strings.Join(curFields, ", "), TableName: curTableName, PlaceHolder: strings.Repeat("?, ", len(curColumns)-1) + "?", Value: strings.Join(curValues, ", "), ColumnCount: len(curColumns)}
+	pkg := srcPkg
+	if pkg != "" {
+		pkg += "."
+	}
+	tpl := tpl{Name: curStruct, Pkg: pkg, Column: strings.Join(curColumns, ", "), Bys: curBys, Scan: strings.Join(curFields, ", "), TableName: curTableName, PlaceHolder: strings.Repeat("?, ", len(curColumns)-1) + "?", Value: strings.Join(curValues, ", "), ColumnCount: len(curColumns)}
 	t, err := template.New("sqlutil").Funcs(template.FuncMap{
 		"raw":   raw,
 		"title": title,

@@ -15,15 +15,15 @@ func New{{.Name}}Repo(db *sql.DB) *{{.Name}}Repo {
 
 {{range $idx,$each := .Bys}}
 // FindBy{{$each.Name|title}} FindBy{{$each.Name|title}}
-func (rp {{$.Name}}Repo) FindBy{{$each.Name|title}}(ctx context.Context, {{$each.Name}} {{$each.Type}}) ([]*{{$.Name}}, error) {
+func (rp {{$.Name}}Repo) FindBy{{$each.Name|title}}(ctx context.Context, {{$each.Name}} {{$each.Type}}) ([]*{{$.Pkg}}{{$.Name}}, error) {
 	rows, err := rp.db.QueryContext(ctx, "select {{$.Column}} from {{$.TableName}} where {{$each.Name}} = ?",{{$each.Name}})
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var results []*{{$.Name}}
+	var results []*{{$.Pkg}}{{$.Name}}
 	for rows.Next() {
-		result := &{{$.Name}}{}
+		result := &{{$.Pkg}}{{$.Name}}{}
 		if err := rows.Scan({{$.Scan|raw}}); err !=nil {
 			return nil, err
 		}
@@ -48,7 +48,7 @@ func (rp {{$.Name}}Repo) DeleteBy{{$each.Name|title}}(ctx context.Context, {{$ea
 {{end}}
 
 // Create Create
-func (rp {{.Name}}Repo) Create(ctx context.Context,obj *{{.Name}}) (int64, error) {
+func (rp {{.Name}}Repo) Create(ctx context.Context,obj *{{.Pkg}}{{.Name}}) (int64, error) {
 	result, err := rp.db.ExecContext(ctx, "insert into {{.TableName}} ({{.Column}}) values({{.PlaceHolder}})", {{.Value}})
 	if err != nil {
 		return 0, err
@@ -61,7 +61,7 @@ func (rp {{.Name}}Repo) Create(ctx context.Context,obj *{{.Name}}) (int64, error
 }
 
 // BatchCreate BatchCreate
-func (rp {{.Name}}Repo) BatchCreate(ctx context.Context, objs []*{{.Name}}) error {
+func (rp {{.Name}}Repo) BatchCreate(ctx context.Context, objs []*{{.Pkg}}{{.Name}}) error {
 	sqlBaseStr := "insert into {{.TableName}} ({{.Column}}) values %s"
 	sqlPlaceHolder := make([]string, 0, len(objs))
 	sqlArgs := make([]interface{}, 0, len(objs)*{{.ColumnCount}})
