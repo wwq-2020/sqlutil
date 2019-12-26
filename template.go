@@ -1,10 +1,12 @@
 package main
 
 const tplStr = `
+// {{.Name}}Repo {{.Name}}Repo
 type {{.Name}}Repo struct{
 	db *sql.DB
 }
 
+// New{{.Name}}Repo New{{.Name}}Repo
 func New{{.Name}}Repo(db *sql.DB) *{{.Name}}Repo {
 	return &{{.Name}}Repo{
 		db: db,
@@ -12,6 +14,7 @@ func New{{.Name}}Repo(db *sql.DB) *{{.Name}}Repo {
 }
 
 {{range $idx,$each := .Bys}}
+// FindBy{{$each.Name|title}} FindBy{{$each.Name|title}}
 func (rp {{$.Name}}Repo) FindBy{{$each.Name|title}}(ctx context.Context, {{$each.Name}} {{$each.Type}}) ([]*{{$.Name}}, error) {
 	rows, err := rp.db.QueryContext(ctx, "select {{$.Column}} from {{$.TableName}} where {{$each.Name}} = ?",{{$each.Name}})
 	if err != nil {
@@ -32,6 +35,4 @@ func (rp {{$.Name}}Repo) FindBy{{$each.Name|title}}(ctx context.Context, {{$each
 	return results, nil
 }
 {{end}}
-
-
 `

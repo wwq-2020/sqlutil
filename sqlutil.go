@@ -217,5 +217,5 @@ func raw(prev string) template.HTML {
 }
 
 func title(prev string) string {
-	return strings.Title(prev)
+	return strings.Title(strings.Replace(prev, "id", "ID", -1))
 }
