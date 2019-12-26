@@ -68,6 +68,10 @@ func main() {
 		flag.PrintDefaults()
 		return
 	}
+	if dst != "" && mod == "" {
+		flag.PrintDefaults()
+		return
+	}
 	genStruct()
 }
 
