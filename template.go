@@ -59,4 +59,20 @@ func (rp {{.Name}}Repo) Create(ctx context.Context,obj *{{.Name}}) (int64, error
 	}
 	return lastInsertID, nil
 }
+
+// Create Create
+func (rp {{.Name}}Repo) BatchCreate(ctx context.Context, objs []*{{.Name}}) error {
+	sqlBaseStr := "insert into {{.TableName}} ({{.Column}}) values %s"
+	sqlPlaceHolder := make([]string, 0, len(objs))
+	sqlArgs := make([]interface{}, 0, len(objs)*{{.ColumnCount}})
+	for _, obj := range objs {
+		sqlPlaceHolder = append(sqlPlaceHolder, "({{.PlaceHolder}})")
+		sqlArgs = append(sqlArgs, {{.Value}})
+	}
+	sqlStr := fmt.Sprintf(sqlBaseStr, strings.Join(sqlPlaceHolder, ","))
+	if _,err := rp.db.ExecContext(ctx, sqlStr, sqlArgs...); err != nil {
+		return err
+	}
+	return nil
+}
 `

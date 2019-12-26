@@ -47,6 +47,7 @@ type tpl struct {
 	Name        string
 	Scan        string
 	Column      string
+	ColumnCount int
 	TableName   string
 	Value       string
 	PlaceHolder string
@@ -202,7 +203,7 @@ func gen(specs []ast.Spec, buf io.Writer) error {
 }
 
 func execTpl(buf io.Writer) error {
-	tpl := tpl{Name: curStruct, Pkg: curPkg, Column: strings.Join(curColumns, ", "), Bys: curBys, Scan: strings.Join(curFields, ", "), TableName: curTableName, PlaceHolder: strings.Repeat("?,", len(curColumns)-1) + "?", Value: strings.Join(curValues, ",")}
+	tpl := tpl{Name: curStruct, Pkg: curPkg, Column: strings.Join(curColumns, ", "), Bys: curBys, Scan: strings.Join(curFields, ", "), TableName: curTableName, PlaceHolder: strings.Repeat("?, ", len(curColumns)-1) + "?", Value: strings.Join(curValues, ", "), ColumnCount: len(curColumns)}
 	t, err := template.New("sqlutil").Funcs(template.FuncMap{
 		"raw":   raw,
 		"title": title,
