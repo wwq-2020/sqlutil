@@ -12,6 +12,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -23,13 +24,15 @@ const (
 )
 
 var (
-	dir          string
+	src          string
+	dst          string
 	curStruct    string
 	curPkg       string
 	curColumns   []string
 	curFields    []string
 	curTableName string
 	curBys       []by
+	curImported  bool
 	tableNameReg = regexp.MustCompile(`table:(\w+)`)
 )
 
@@ -48,12 +51,13 @@ type tpl struct {
 }
 
 func init() {
-	flag.StringVar(&dir, "dir", ".", "-dir=.")
+	flag.StringVar(&src, "src", ".", "-src=.")
+	flag.StringVar(&dst, "dst", "", "-dst=.")
 	flag.Parse()
 }
 
 func main() {
-	if dir == "" {
+	if src == "" {
 		flag.PrintDefaults()
 		return
 	}
@@ -61,7 +65,7 @@ func main() {
 }
 
 func genStruct() {
-	if err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+	if err := filepath.Walk(src, func(curPath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -72,16 +76,25 @@ func genStruct() {
 		if strings.HasSuffix(name, suffix) || !strings.HasSuffix(name, ".go") {
 			return nil
 		}
-		p, err := build.ImportDir(dir, 0)
+		p, err := build.ImportDir(src, 0)
 		if err != nil {
 			return err
 		}
 		curPkg = p.Name
-		baseDir := filepath.Dir(path)
+		var baseDir string
+		fmt.Println(dst == "", dst)
+		if dst == "" {
+			baseDir = filepath.Dir(curPath)
+		} else {
+			curPkg = path.Base(dst)
+			baseDir = dst
+		}
 		dst := filepath.Join(baseDir, strings.Replace(name, ".go", suffix, -1))
+		fmt.Println(baseDir, dst)
+
 		buf := bytes.NewBuffer(nil)
 
-		if err := generate(path, buf); err != nil {
+		if err := generate(curPath, buf); err != nil {
 			return err
 		}
 		if buf.Len() != 0 {
@@ -107,13 +120,23 @@ func generate(path string, buf *bytes.Buffer) error {
 		if !ok || gd.Tok != token.TYPE {
 			continue
 		}
+		if len(gd.Specs) == 0 {
+			continue
+		}
 		if len(gd.Doc.List) != 0 {
 			curTableName = getTableName(gd.Doc.List[0].Text)
 		}
-		if err := walkGd(gd.Specs, buf); err != nil {
+		if err := gen(gd.Specs, buf); err != nil {
 			return err
 		}
+		curStruct = ""
+		curPkg = ""
+		curColumns = nil
+		curFields = nil
+		curTableName = ""
+		curBys = nil
 	}
+	curImported = false
 	return nil
 }
 
@@ -125,7 +148,15 @@ func getTableName(comment string) string {
 	return ""
 }
 
-func walkGd(specs []ast.Spec, buf io.Writer) error {
+func gen(specs []ast.Spec, buf io.Writer) error {
+	if !curImported {
+		curImported = true
+		io.WriteString(buf, fmt.Sprintf(`package %s
+			import(
+				"database/sql"
+				"context"
+			)`, curPkg))
+	}
 	for _, spec := range specs {
 		ts, ok := spec.(*ast.TypeSpec)
 		if !ok {

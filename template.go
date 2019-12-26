@@ -1,12 +1,6 @@
 package main
 
 const tplStr = `
-package {{.Pkg}}
-import(
-	"database/sql"
-	"context"
-)
-
 type {{.Name}}Repo struct{
 	db *sql.DB
 }
