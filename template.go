@@ -35,4 +35,28 @@ func (rp {{$.Name}}Repo) FindBy{{$each.Name|title}}(ctx context.Context, {{$each
 	return results, nil
 }
 {{end}}
+
+{{range $idx,$each := .Bys}}
+// DeleteBy{{$each.Name|title}} DeleteBy{{$each.Name|title}}
+func (rp {{$.Name}}Repo) DeleteBy{{$each.Name|title}}(ctx context.Context, {{$each.Name}} {{$each.Type}}) error {
+	_, err := rp.db.ExecContext(ctx, "delete from {{$.TableName}} where {{$each.Name}} = ?",{{$each.Name}})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+{{end}}
+
+// Create Create
+func (rp {{.Name}}Repo) Create(ctx context.Context,obj *{{.Name}}) (int64, error) {
+	result, err := rp.db.ExecContext(ctx, "insert into {{.TableName}} ({{.Column}}) values({{.PlaceHolder}})", {{.Value}})
+	if err != nil {
+		return 0, err
+	}
+	lastInsertID, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	return lastInsertID, nil
+}
 `

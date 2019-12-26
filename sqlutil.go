@@ -29,6 +29,7 @@ var (
 	curStruct    string
 	curPkg       string
 	curColumns   []string
+	curValues    []string
 	curFields    []string
 	curTableName string
 	curBys       []by
@@ -42,12 +43,14 @@ type by struct {
 }
 
 type tpl struct {
-	Pkg       string
-	Name      string
-	Scan      string
-	Column    string
-	TableName string
-	Bys       []by
+	Pkg         string
+	Name        string
+	Scan        string
+	Column      string
+	TableName   string
+	Value       string
+	PlaceHolder string
+	Bys         []by
 }
 
 func init() {
@@ -133,6 +136,7 @@ func generate(path string, buf *bytes.Buffer) error {
 		curFields = nil
 		curTableName = ""
 		curBys = nil
+		curValues = nil
 	}
 	curImported = false
 	return nil
@@ -183,7 +187,7 @@ func gen(specs []ast.Spec, buf io.Writer) error {
 					continue
 				}
 				curColumns = append(curColumns, tagValues[0])
-
+				curValues = append(curValues, "obj."+field.Names[0].Name)
 				curFields = append(curFields, `&result.`+field.Names[0].Name)
 				if len(tagValues) > 1 && tagValues[1] == "by" {
 					curBys = append(curBys, by{Name: tagValues[0], Type: ident.Name})
@@ -198,7 +202,7 @@ func gen(specs []ast.Spec, buf io.Writer) error {
 }
 
 func execTpl(buf io.Writer) error {
-	tpl := tpl{Name: curStruct, Pkg: curPkg, Column: strings.Join(curColumns, ", "), Bys: curBys, Scan: strings.Join(curFields, ", "), TableName: curTableName}
+	tpl := tpl{Name: curStruct, Pkg: curPkg, Column: strings.Join(curColumns, ", "), Bys: curBys, Scan: strings.Join(curFields, ", "), TableName: curTableName, PlaceHolder: strings.Repeat("?,", len(curColumns)-1) + "?", Value: strings.Join(curValues, ",")}
 	t, err := template.New("sqlutil").Funcs(template.FuncMap{
 		"raw":   raw,
 		"title": title,
