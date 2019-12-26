@@ -60,7 +60,7 @@ func (rp {{.Name}}Repo) Create(ctx context.Context,obj *{{.Name}}) (int64, error
 	return lastInsertID, nil
 }
 
-// Create Create
+// BatchCreate BatchCreate
 func (rp {{.Name}}Repo) BatchCreate(ctx context.Context, objs []*{{.Name}}) error {
 	sqlBaseStr := "insert into {{.TableName}} ({{.Column}}) values %s"
 	sqlPlaceHolder := make([]string, 0, len(objs))
