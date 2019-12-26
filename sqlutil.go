@@ -64,7 +64,7 @@ func init() {
 }
 
 func main() {
-	if src == "" || mod == "" {
+	if src == "" {
 		flag.PrintDefaults()
 		return
 	}
@@ -225,9 +225,9 @@ func gen(specs []ast.Spec, buf io.Writer) error {
 }
 
 func execTpl(buf io.Writer) error {
-	pkg := srcPkg
-	if pkg != "" {
-		pkg += "."
+	var pkg string
+	if dst != "" {
+		pkg = srcPkg + "."
 	}
 	tpl := tpl{Name: curStruct, Pkg: pkg, Column: strings.Join(curColumns, ", "), Bys: curBys, Scan: strings.Join(curFields, ", "), TableName: curTableName, PlaceHolder: strings.Repeat("?, ", len(curColumns)-1) + "?", Value: strings.Join(curValues, ", "), ColumnCount: len(curColumns)}
 	t, err := template.New("sqlutil").Funcs(template.FuncMap{
