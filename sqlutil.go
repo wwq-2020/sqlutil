@@ -53,11 +53,10 @@ func init() {
 }
 
 func main() {
-	// if dir == "" {
-	// 	flag.PrintDefaults()
-	// 	return
-	// }
-	dir = "testdata"
+	if dir == "" {
+		flag.PrintDefaults()
+		return
+	}
 	genStruct()
 }
 
