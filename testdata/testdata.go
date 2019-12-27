@@ -1,5 +1,7 @@
 package testdata
 
+import _ "database/sql" //a
+
 // User table:user a
 type User struct {
 	ID       int64 `sqlutil:"id,by"`

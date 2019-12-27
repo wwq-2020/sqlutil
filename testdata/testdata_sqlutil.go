@@ -1,14 +1,12 @@
 package testdata
-
-import (
-	"context"
-	"database/sql"
-	"fmt"
-	"strings"
-)
-
+	import(
+		"database/sql"
+		"context"
+		"fmt"
+		"strings"
+	)
 // UserRepo UserRepo
-type UserRepo struct {
+type UserRepo struct{
 	db *sql.DB
 }
 
@@ -19,9 +17,10 @@ func NewUserRepo(db *sql.DB) *UserRepo {
 	}
 }
 
+
 // FindByID FindByID
 func (rp UserRepo) FindByID(ctx context.Context, id int64) ([]*User, error) {
-	rows, err := rp.db.QueryContext(ctx, "select id, username, password from user where id = ?", id)
+	rows, err := rp.db.QueryContext(ctx, "select id, username, password from user where id = ?",id)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +28,7 @@ func (rp UserRepo) FindByID(ctx context.Context, id int64) ([]*User, error) {
 	var results []*User
 	for rows.Next() {
 		result := &User{}
-		if err := rows.Scan(&result.ID, &result.Username, &result.Password); err != nil {
+		if err := rows.Scan(&result.ID, &result.Username, &result.Password); err !=nil {
 			return nil, err
 		}
 		results = append(results, result)
@@ -40,17 +39,20 @@ func (rp UserRepo) FindByID(ctx context.Context, id int64) ([]*User, error) {
 	return results, nil
 }
 
+
+
 // DeleteByID DeleteByID
 func (rp UserRepo) DeleteByID(ctx context.Context, id int64) error {
-	_, err := rp.db.ExecContext(ctx, "delete from user where id = ?", id)
+	_, err := rp.db.ExecContext(ctx, "delete from user where id = ?",id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
+
 // Create Create
-func (rp UserRepo) Create(ctx context.Context, obj *User) (int64, error) {
+func (rp UserRepo) Create(ctx context.Context,obj *User) (int64, error) {
 	result, err := rp.db.ExecContext(ctx, "insert into user (id, username, password) values(?, ?, ?)", obj.ID, obj.Username, obj.Password)
 	if err != nil {
 		return 0, err
@@ -72,14 +74,14 @@ func (rp UserRepo) BatchCreate(ctx context.Context, objs []*User) error {
 		sqlArgs = append(sqlArgs, obj.ID, obj.Username, obj.Password)
 	}
 	sqlStr := fmt.Sprintf(sqlBaseStr, strings.Join(sqlPlaceHolder, ","))
-	if _, err := rp.db.ExecContext(ctx, sqlStr, sqlArgs...); err != nil {
+	if _,err := rp.db.ExecContext(ctx, sqlStr, sqlArgs...); err != nil {
 		return err
 	}
 	return nil
 }
 
 // User3Repo User3Repo
-type User3Repo struct {
+type User3Repo struct{
 	db *sql.DB
 }
 
@@ -90,9 +92,10 @@ func NewUser3Repo(db *sql.DB) *User3Repo {
 	}
 }
 
+
 // FindByID FindByID
 func (rp User3Repo) FindByID(ctx context.Context, id int64) ([]*User3, error) {
-	rows, err := rp.db.QueryContext(ctx, "select id, username, password from user3 where id = ?", id)
+	rows, err := rp.db.QueryContext(ctx, "select id, username, password from user3 where id = ?",id)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +103,7 @@ func (rp User3Repo) FindByID(ctx context.Context, id int64) ([]*User3, error) {
 	var results []*User3
 	for rows.Next() {
 		result := &User3{}
-		if err := rows.Scan(&result.ID, &result.Username, &result.Password); err != nil {
+		if err := rows.Scan(&result.ID, &result.Username, &result.Password); err !=nil {
 			return nil, err
 		}
 		results = append(results, result)
@@ -111,17 +114,20 @@ func (rp User3Repo) FindByID(ctx context.Context, id int64) ([]*User3, error) {
 	return results, nil
 }
 
+
+
 // DeleteByID DeleteByID
 func (rp User3Repo) DeleteByID(ctx context.Context, id int64) error {
-	_, err := rp.db.ExecContext(ctx, "delete from user3 where id = ?", id)
+	_, err := rp.db.ExecContext(ctx, "delete from user3 where id = ?",id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
+
 // Create Create
-func (rp User3Repo) Create(ctx context.Context, obj *User3) (int64, error) {
+func (rp User3Repo) Create(ctx context.Context,obj *User3) (int64, error) {
 	result, err := rp.db.ExecContext(ctx, "insert into user3 (id, username, password) values(?, ?, ?)", obj.ID, obj.Username, obj.Password)
 	if err != nil {
 		return 0, err
@@ -143,7 +149,7 @@ func (rp User3Repo) BatchCreate(ctx context.Context, objs []*User3) error {
 		sqlArgs = append(sqlArgs, obj.ID, obj.Username, obj.Password)
 	}
 	sqlStr := fmt.Sprintf(sqlBaseStr, strings.Join(sqlPlaceHolder, ","))
-	if _, err := rp.db.ExecContext(ctx, sqlStr, sqlArgs...); err != nil {
+	if _,err := rp.db.ExecContext(ctx, sqlStr, sqlArgs...); err != nil {
 		return err
 	}
 	return nil
